@@ -18,7 +18,7 @@ indicate when this mode is in effect.
 
 Put it in your include directives:
 
-```sh
+```
 ...
 // Support for LED Caps Lock mode
 #include "Kaleidoscope-CapsLock.h"
@@ -28,7 +28,7 @@ Put it in your include directives:
 Add Key_CapsLock somewhere in your keymap (e.g. in the FUNCTION keymap in the same
 positions as the shift keys in your regular keymap):
 
-```sh
+```
 
   [FUNCTION] =  KEYMAP_STACKED
   (___,      Key_F1,           Key_F2,      Key_F3,     Key_F4,        Key_F5,           XXX,
@@ -50,7 +50,7 @@ positions as the shift keys in your regular keymap):
 
 And then put it in the Kaleidoscope.use() directive in setup():
 
-```sh
+```
     ...
     // The breathe effect slowly pulses all of the LEDs on your keyboard
     &LEDBreatheEffect,
