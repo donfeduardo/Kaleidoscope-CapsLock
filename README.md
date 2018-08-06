@@ -75,13 +75,3 @@ out [Kaleidoscope-OneShot](https://github.com/keyboardio/Kaleidoscope-OneShot).
 Kaleidoscope-OneShot mimics holding down a specific modifier key by hand (e.g. the shift
 key), and thus it affects the state of every key pressed while the OneShot modifier is
 active.
-
-## Known Issues:
-
-There seems to be an issue with the LED_CAPS_LOCK state tracked by the keyboard (the
-observed behavior is that LED_CAPS_LOCK gets turned on the first time Key_CapsLock is
-pressed, and then is not turned off on subsequent presses). As a result, after 
-initialization Kaleidoscope-CapsLock tracks its own state. There's a small possibility
-this will result in inconsistent state, where the OS thinks Caps Lock is off but the
-keyboard LEDs will indicate that it's on. Unplug the keyboard and plug it back in to
-resolve this if it happens to you.

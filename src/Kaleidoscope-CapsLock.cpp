@@ -2,13 +2,10 @@
 
 namespace kaleidoscope {
 bool CapsLock_::capsCleanupDone = true;
-bool CapsLock_::capsState = false;
 cRGB activeModeColor = CRGB(255, 0, 0);
 
 void CapsLock_::begin(void) {
-  capsState = !!(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
   Kaleidoscope.useLoopHook(capsLockLoopHook);
-  Kaleidoscope.useEventHandlerHook(capsLockEventHandlerHook);
 }
 
 /*
@@ -18,6 +15,8 @@ void CapsLock_::begin(void) {
 void CapsLock_::capsLockLoopHook(bool postClear) {
   if (!postClear)
     return;
+
+  bool capsState = !!(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
 
   if (capsState) {
     capsCleanupDone = false;
@@ -46,21 +45,6 @@ void CapsLock_::capsLockLoopHook(bool postClear) {
   }
 }
 
-/*
-  eventHandlerHook listens for "presses" of the mapped CapsLock key.
-  When that key is toggled on, flip the capsState bit.
-*/
-Key CapsLock_::capsLockEventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state) {
-  if ((key_state & INJECTED) || !keyToggledOn(key_state))
-    return mapped_key;
-  
-  if (mapped_key == Key_CapsLock) {
-      // LED_CAPS_LOCK isn't ever toggled off after being set. Track state ourselves.
-      capsState = !capsState;
-  }
-  
-  return mapped_key;
-}
 }
 
 kaleidoscope::CapsLock_ CapsLock;
