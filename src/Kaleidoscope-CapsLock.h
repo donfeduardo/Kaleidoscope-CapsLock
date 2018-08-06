@@ -12,10 +12,8 @@ class CapsLock_ : public KaleidoscopePlugin {
 
  private:
   static void capsLockLoopHook(const bool postClear);
-  static Key  capsLockEventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state); 
 
   static bool capsCleanupDone;
-  static bool capsState;
 };
 }
 
