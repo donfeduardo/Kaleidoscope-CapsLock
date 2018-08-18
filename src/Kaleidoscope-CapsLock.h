@@ -3,20 +3,23 @@
 #include "Kaleidoscope-LEDControl.h"
 #include "LEDUtils.h"
 
-namespace kaleidoscope {
-class CapsLock_ : public KaleidoscopePlugin {
- public:
-  CapsLock_(void) {}
+class CapsLock_ : public kaleidoscope::Plugin {
+  public:
+    CapsLock_(void) {}
+    static cRGB color;
+    static uint8_t shiftHue;
+    static uint8_t highlightShiftKeys;
 
-  void begin(void) final;
+    kaleidoscope::EventHandlerResult onSetup(void);
+    kaleidoscope::EventHandlerResult afterEachCycle();
+    kaleidoscope::EventHandlerResult onKeyswitchEvent(Key &mappedKey, byte row, byte col, 
+                      uint8_t keyState);
+    static bool swCapsLockState;
+    static bool useHwState;
+    static uint8_t cycleCount;
 
- private:
-  static void capsLockLoopHook(const bool postClear);
-  static Key  capsLockEventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state); 
-
-  static bool capsCleanupDone;
-  static bool capsState;
+  private:
+    static bool capsCleanupDone;
 };
-}
 
-extern kaleidoscope::CapsLock_ CapsLock;
+extern CapsLock_ CapsLock;

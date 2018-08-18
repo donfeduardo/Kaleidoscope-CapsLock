@@ -25,8 +25,10 @@ Put it in your include directives:
 ...
 ```
 
-Add Key_CapsLock somewhere in your keymap (e.g. in the FUNCTION keymap in the same
-positions as the shift keys in your regular keymap):
+If Key_CapsLock doesn't already exist somewhere in your keymap, add it. Since the first
+version of this plugin was written, the default layout has changed to add this binding to
+the FUNCTION keymap on the 'Any' key. Personally I like it better in the same positions
+as the shift keys in your regular keymap. It seems more memorable to me that way:
 
 ```
 
@@ -48,15 +50,16 @@ positions as the shift keys in your regular keymap):
 
 ```
 
-And then put it in the Kaleidoscope.use() directive in setup():
+Once you have verified the binding of Key_CapsLock, then add a line to your
+KALEIDOSCOPE_INIT_PLUGINS() directive:
 
 ```
     ...
     // The breathe effect slowly pulses all of the LEDs on your keyboard
-    &LEDBreatheEffect,
+    LEDBreatheEffect,
 
     // The CapsLock plugin lights up CAPS LOCK mode in a similar way to numpad mode
-    &CapsLock,
+    CapsLock,
     ...
 ```
 
@@ -65,6 +68,26 @@ fn-shift (or whatever key binding you choose to map to Key_CapsLock). It will re
 active until you repeat the same keypress. Kaleidoscope-CapsLock is not affected by the
 state of the unmodified shift key. The behavior of the shift modifier while Caps Lock is
 active will be OS dependent.
+
+## Options:
+
+Based on user feedback the highlight color, shift key color, and shift key highlight mode
+are all now configurable options. You may change the defaults by specifying new values in
+your setup() directive:
+
+```
+  CapsLock.color = CRGB(255, 0, 0);
+  // The default is red, but any valid CRGB value should work.
+
+  CapsLock.highlightShiftKeys = 2;
+  // The default value of 2 highlights the shift keys with an animated "breathe" effect.
+  // Change this to 1 for a static highlight with no animation.
+  // Change it to 0 to disable the highlighting of the shift keys.
+  
+  CapsLock.shiftHue = 170;
+  // The default base hue for the shift keys is blue. It should accept any integer
+  // between 0 and 255, but I haven't tested them all to be sure.
+```
 
 ## Alternatives:
 
@@ -78,10 +101,23 @@ active.
 
 ## Known Issues:
 
-There seems to be an issue with the LED_CAPS_LOCK state tracked by the keyboard (the
-observed behavior is that LED_CAPS_LOCK gets turned on the first time Key_CapsLock is
-pressed, and then is not turned off on subsequent presses). As a result, after 
-initialization Kaleidoscope-CapsLock tracks its own state. There's a small possibility
-this will result in inconsistent state, where the OS thinks Caps Lock is off but the
-keyboard LEDs will indicate that it's on. Unplug the keyboard and plug it back in to
-resolve this if it happens to you.
+There's a small possibility that a rapid press of Key_CapsLock will result in an
+inconsistent state, where the OS thinks Caps Lock is off but the keyboard LEDs will
+indicate that it's on. With the current version of the plugin I have found that a second,
+equally rapid press should resolve this issue; if it doesn't, simply disconnecting the
+keyboard and then reconnecting it should take care of it.
+
+There seems to be an issue with the LED_CAPS_LOCK state tracked by the keyboard. This
+appears somehow to be dependent on the host operating system. On macOS the observed
+behavior is that LED_CAPS_LOCK gets turned on the first time Key_CapsLock is pressed,
+and then is not turned off on subsequent presses. At least one user has reported that he
+is not affected by this issue, but I'm unable to duplicate his report on my system, as
+much as I'd prefer for the code to depend solely on the hardware state.
+
+Because of this issue, after initialization Kaleidoscope-CapsLock initially tracks its
+own state. The newest version of the plugin has some code that tries to do the right
+thing based on observed behavior. If the plugin is able to determine that the hardware
+state is consistent, it should switch to using the hardware state instead of the software
+state. If the hardware state is not consistent (and it's not on my system) the plugin
+will continue to track its own state.
+

@@ -1,66 +1,101 @@
 #include "Kaleidoscope-CapsLock.h"
+#include "LEDUtils.h"
+#include "Kaleidoscope.h"
 
-namespace kaleidoscope {
 bool CapsLock_::capsCleanupDone = true;
-bool CapsLock_::capsState = false;
-cRGB activeModeColor = CRGB(255, 0, 0);
+bool CapsLock_::swCapsLockState = false;
+bool CapsLock_::useHwState = false;
+uint8_t CapsLock_::highlightShiftKeys = 2;
+cRGB CapsLock_::color = CRGB(255, 0, 0);
+uint8_t CapsLock_::shiftHue = 170;
+uint8_t CapsLock_::cycleCount = 0;
 
-void CapsLock_::begin(void) {
-  capsState = !!(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
-  Kaleidoscope.useLoopHook(capsLockLoopHook);
-  Kaleidoscope.useEventHandlerHook(capsLockEventHandlerHook);
+kaleidoscope::EventHandlerResult CapsLock_::onSetup(void) {
+  swCapsLockState = !!(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
+  return kaleidoscope::EventHandlerResult::OK;
+}
+
+static bool getCapsLockState() {
+  if (CapsLock_::useHwState) {
+    return !!(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
+  } else {
+    return CapsLock_::swCapsLockState;
+  }
+}
+
+static void syncCapsLock (bool state) {
+  bool hwState = !!(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
+  if (hwState == state) {
+    CapsLock_::cycleCount++;
+    if (CapsLock_::cycleCount > 1) {
+      CapsLock_::useHwState = true;
+    }
+    CapsLock_::swCapsLockState = hwState;
+  } else {
+    CapsLock_::cycleCount = 0;
+    CapsLock_::useHwState = false;
+    CapsLock_::swCapsLockState = state;
+  }
+}
+
+kaleidoscope::EventHandlerResult CapsLock_::onKeyswitchEvent(
+  Key &mappedKey, byte row, byte col, uint8_t keyState) {
+  if (CapsLock_::useHwState) {
+    /*
+      If hardware state is found to be reliable, we'll use that.
+      If hardware state fails to change in syncCapsLock subroutine, this will be skipped.
+    */
+    syncCapsLock(kaleidoscope::hid::getKeyboardLEDs() & LED_CAPS_LOCK);
+    return kaleidoscope::EventHandlerResult::OK;
+  }
+  /*
+    Start by using software state on its own.
+    If hardware state is found to be unreliable, we'll just keep using software state.
+  */
+  if (mappedKey == Key_CapsLock) {
+    if (keyToggledOff(keyState) ) {
+      /*        
+        The keyToggledOff keyState indicates that the key was released in the last cycle.
+        Use that keyState value as a trigger to toggle software state.
+      */
+      syncCapsLock(!CapsLock_::swCapsLockState);
+    }
+  }
+  return kaleidoscope::EventHandlerResult::OK;
 }
 
 /*
-  loopHook will paint the activeModeColor onto letter keys as long as capsState is true.
+  this will paint the preferred color onto letter keys as long as capsState is true.
   When capsState is set to false, reset the color mode to its previous state.
 */
-void CapsLock_::capsLockLoopHook(bool postClear) {
-  if (!postClear)
-    return;
-
+kaleidoscope::EventHandlerResult CapsLock_::afterEachCycle() {
+  bool capsState = getCapsLockState();
   if (capsState) {
     capsCleanupDone = false;
     for (uint8_t r = 0; r < ROWS; r++) {
       for (uint8_t c = 0; c < COLS; c++) {
         Key k = Layer.lookupOnActiveLayer(r, c);
 
-        cRGB breathColor = breath_compute();
+        cRGB shiftColor = highlightShiftKeys == 2 ? breath_compute(shiftHue) : hsvToRgb(shiftHue, 255, 255);
 
         if ((k.raw >= Key_A.raw) && (k.raw <= Key_Z.raw)) {
-          ::LEDControl.setCrgbAt(r, c, activeModeColor);
-        } else if (k == Key_LeftShift || k == Key_RightShift) {
-          ::LEDControl.setCrgbAt(r, c, breathColor);
+          ::LEDControl.setCrgbAt(r, c, color);
+        } else if (highlightShiftKeys && (k == Key_LeftShift || k == Key_RightShift)) {
+          ::LEDControl.setCrgbAt(r, c, shiftColor);
         } else {
           ::LEDControl.refreshAt(r, c);
         }
       }
     }
+    return kaleidoscope::EventHandlerResult::OK;
   } else {
     if (!capsCleanupDone) {
       // Some keys seem to get "stuck" in the painted color. Reset current mode to unstick them.
       ::LEDControl.set_mode(::LEDControl.get_mode_index());
       capsCleanupDone = true;
     }
-    return;
+    return kaleidoscope::EventHandlerResult::OK;
   }
 }
 
-/*
-  eventHandlerHook listens for "presses" of the mapped CapsLock key.
-  When that key is toggled on, flip the capsState bit.
-*/
-Key CapsLock_::capsLockEventHandlerHook(Key mapped_key, byte row, byte col, uint8_t key_state) {
-  if ((key_state & INJECTED) || !keyToggledOn(key_state))
-    return mapped_key;
-  
-  if (mapped_key == Key_CapsLock) {
-      // LED_CAPS_LOCK isn't ever toggled off after being set. Track state ourselves.
-      capsState = !capsState;
-  }
-  
-  return mapped_key;
-}
-}
-
-kaleidoscope::CapsLock_ CapsLock;
+CapsLock_ CapsLock;
