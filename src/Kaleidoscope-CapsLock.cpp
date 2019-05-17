@@ -1,5 +1,4 @@
 #include "Kaleidoscope-CapsLock.h"
-#include "LEDUtils.h"
 #include "Kaleidoscope.h"
 
 bool CapsLock_::capsCleanupDone = true;
@@ -54,7 +53,7 @@ kaleidoscope::EventHandlerResult CapsLock_::onKeyswitchEvent(
   */
   if (mappedKey == Key_CapsLock) {
     if (keyToggledOff(keyState) ) {
-      /*        
+      /*
         The keyToggledOff keyState indicates that the key was released in the last cycle.
         Use that keyState value as a trigger to toggle software state.
       */
