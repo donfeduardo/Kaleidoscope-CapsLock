@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Kaleidoscope-LEDControl.h"
-#include "LEDUtils.h"
 
 class CapsLock_ : public kaleidoscope::Plugin {
   public:
