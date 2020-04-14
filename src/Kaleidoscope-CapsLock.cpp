@@ -1,5 +1,5 @@
 #include "Kaleidoscope-CapsLock.h"
-#include "LEDUtils.h"
+//#include "LEDUtils.h"
 #include "Kaleidoscope.h"
 
 bool CapsLock_::capsCleanupDone = true;
@@ -54,7 +54,7 @@ kaleidoscope::EventHandlerResult CapsLock_::onKeyswitchEvent(
   */
   if (mappedKey == Key_CapsLock) {
     if (keyToggledOff(keyState) ) {
-      /*        
+      /*
         The keyToggledOff keyState indicates that the key was released in the last cycle.
         Use that keyState value as a trigger to toggle software state.
       */
@@ -78,7 +78,7 @@ kaleidoscope::EventHandlerResult CapsLock_::afterEachCycle() {
 
         cRGB shiftColor = highlightShiftKeys == 2 ? breath_compute(shiftHue) : hsvToRgb(shiftHue, 255, 255);
 
-        if ((k.raw >= Key_A.raw) && (k.raw <= Key_Z.raw)) {
+        if ((k.getRaw() >= Key_A.getRaw()) && (k.getRaw() <= Key_Z.getRaw())) {
           ::LEDControl.setCrgbAt(r, c, color);
         } else if (highlightShiftKeys && (k == Key_LeftShift || k == Key_RightShift)) {
           ::LEDControl.setCrgbAt(r, c, shiftColor);
