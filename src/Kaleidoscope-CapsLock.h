@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Kaleidoscope-LEDControl.h"
-#include "LEDUtils.h"
 
 class CapsLock_ : public kaleidoscope::Plugin {
   public:
@@ -12,7 +11,7 @@ class CapsLock_ : public kaleidoscope::Plugin {
 
     kaleidoscope::EventHandlerResult onSetup(void);
     kaleidoscope::EventHandlerResult afterEachCycle();
-    kaleidoscope::EventHandlerResult onKeyswitchEvent(Key &mappedKey, byte row, byte col, 
+    kaleidoscope::EventHandlerResult onKeyswitchEvent(Key &mappedKey, KeyAddr keyAddr,
                       uint8_t keyState);
     static bool swCapsLockState;
     static bool useHwState;
